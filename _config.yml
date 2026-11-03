@@ -1,0 +1,7 @@
+title: MyFronius — Plugin Jeedom
+description: Plugin Jeedom pour les installations photovoltaïques Fronius (Solar API).
+baseurl: "/jeedom-plugin-myfronius"
+theme: jekyll-theme-cayman
+permalink: /:path/
+exclude:
+  - README.md
