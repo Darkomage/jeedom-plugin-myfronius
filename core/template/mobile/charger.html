@@ -1,0 +1,25 @@
+<div class="eqLogic eqLogic-widget col2 text-center #eqLogic_class# #class# #category#" data-eqType="#eqType#" data-eqLogic_id="#id#" data-eqLogic_uid="#uid#" data-version="#version#" data-translate-category="#translate_category#" data-category="#category#" data-tags="#tags#" style="#style#">
+  <!-- Hôte mobile : pleine largeur (col2), hauteur automatique, un seul titre sans lien vers l'admin desktop -->
+  <link rel="stylesheet" href="plugins/myfronius/core/template/dashboard/site.css?v=#mfr_css_version#">
+  <div class="widget-name">
+    <span style="color:#background-color#" title="#alert_name#"><i class='#alert_icon#'></i></span>
+    <span class="panelLink pull-left cursor"><a href="#panelLink#"><i class="fas fa-external-link-alt"></i></a></span>
+    <span>#name_display# <span class="object_name">#object_name#</span></span>
+  </div>
+  <div class="cmds">
+    <script>
+    // Hôte Jeedom des corps partagés (core/template/widget/*.html) : mises à jour live et actions,
+    // avec ou sans valeur ({ slider: 16 }, { select: '4' }, { message: '07:30', title: '' })
+    window.mfrHost = window.mfrHost || {
+      subscribe: function (id, fn) { jeedom.cmd.addUpdateFunction(String(id), fn); },
+      execute: function (id, options) { jeedom.cmd.execute(options ? { id: id, value: options } : { id: id }); }
+    };
+    </script>
+    #mfr_body#
+  </div>
+  <script>
+  (function () {
+    if ('#panelLink#' == '') { document.querySelector('.eqLogic[data-eqLogic_uid="#uid#"] .panelLink')?.remove(); }
+  })();
+  </script>
+</div>

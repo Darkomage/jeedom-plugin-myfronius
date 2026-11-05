@@ -1,0 +1,40 @@
+/* Icône de type sur les cartes équipement MyFronius */
+.mfr-card-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 65px;
+    height: 65px;
+    border-radius: 8px;
+    margin: 6px auto 4px;
+}
+
+.mfr-card-icon i {
+    font-size: 32px;
+    color: #ffffff;
+}
+
+/* Séparation visuelle entre zones */
+.eqLogicThumbnailDisplay > legend + legend,
+.eqLogicThumbnailContainer + legend {
+    margin-top: 18px;
+}
+
+/* Zones enroulables */
+legend.mfr-zone-toggle {
+    cursor: pointer;
+    user-select: none;
+}
+
+legend.mfr-zone-toggle .mfr-zone-chevron {
+    float: right;
+    transition: transform 0.2s ease;
+}
+
+legend.mfr-zone-toggle .mfr-zone-chevron.mfr-collapsed {
+    transform: rotate(-90deg);
+}
+
+.mfr-zone-content.mfr-hidden {
+    display: none;
+}

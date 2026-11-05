@@ -1,0 +1,33 @@
+{
+  "id": "myfronius",
+  "name": "MyFronius",
+  "pluginVersion": "1.0.0",
+  "description": {
+    "fr_FR": "Supervision d'une installation photovoltaïque Fronius (onduleur, Smart Meter, batterie) via la Solar API : flux de puissance, surplus disponible, tendances, énergies du jour et état de la batterie, pour vos scénarios ; pilotage optionnel de charges sur le surplus, de la batterie (Modbus TCP) et des bornes de recharge Fronius Wattpilot (seules bornes prises en charge à ce jour). Widgets dédiés Site PV et Borne."
+  },
+  "licence": "AGPL",
+  "author": "Thoto",
+  "require": "4.4",
+  "category": "energy",
+  "hasOwnDeamon": true,
+  "hasDependency": true,
+  "maxDependancyInstallTime": 10,
+  "issue": "https://github.com/Darkomage/jeedom-plugin-myfronius/issues",
+  "changelog": "https://darkomage.github.io/jeedom-plugin-myfronius/stable/#language#/changelog/",
+  "changelog_beta": "https://darkomage.github.io/jeedom-plugin-myfronius/beta/#language#/changelog/",
+  "documentation": "https://darkomage.github.io/jeedom-plugin-myfronius/stable/#language#/",
+  "documentation_beta": "https://darkomage.github.io/jeedom-plugin-myfronius/beta/#language#/",
+  "link": {
+    "forum": "https://community.jeedom.com/t/plugin-myfronius/151726"
+  },
+  "language": [
+    "fr_FR"
+  ],
+  "compatibility": [
+    "rpi",
+    "docker",
+    "diy",
+    "v4",
+    "atlas"
+  ]
+}

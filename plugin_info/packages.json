@@ -1,0 +1,15 @@
+{
+  "pre-install": {},
+  "apt": {
+    "python3": {},
+    "python3-requests": {},
+    "python3-serial": {},
+    "python3-pyudev": {},
+    "python3-bcrypt": {}
+  },
+  "pip3": {},
+  "npm": {},
+  "yarn": {},
+  "plugin": {},
+  "post-install": {}
+}
