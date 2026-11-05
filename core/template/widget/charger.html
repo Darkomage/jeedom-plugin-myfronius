@@ -1,0 +1,236 @@
+<div class="mfc-widget" id="mfc-#uid#">
+  <!-- 1. état -->
+  <div class="mfc-tiles">
+    <div class="mfc-tile mfc-power"><span class="v" data-k="p">—</span><span class="s" data-k="p_sub">W</span></div>
+    <div class="mfc-tile"><span class="v" data-k="car">—</span><span class="s">voiture</span></div>
+    <div class="mfc-tile"><span class="v" data-k="e_session">—</span><span class="s">kWh · session</span></div>
+  </div>
+  <!-- 2. mode et forçage -->
+  <div class="mfc-lbl">Mode</div>
+  <div class="mfc-seg" data-seg="mode">
+    <span data-mode="3">Défaut</span><span data-mode="4">Éco</span><span data-mode="5">Prochain trajet</span>
+  </div>
+  <div class="mfc-lbl">Forçage</div>
+  <div class="mfc-seg" data-seg="force">
+    <span data-force="0">Automatique</span><span data-force="2">Charge</span><span data-force="1">Arrêt</span>
+  </div>
+  <!-- 3. réglages -->
+  <div class="mfc-settings #mfc_settings_class#">
+    <div class="mfc-lbl">Réglages</div>
+    <div class="mfc-row"><label>Courant max</label><input type="range" min="6" max="32" step="1" data-in="amp"><span class="val" data-k="amp_val">—</span></div>
+    <div class="mfc-lbl">Prochain trajet</div>
+    <div class="mfc-row"><label>Énergie</label><input type="number" min="1" max="100" step="0.5" data-in="fte"><span class="val">kWh</span></div>
+    <div class="mfc-row"><label>Distance</label><input type="number" min="10" max="1000" step="10" data-in="trip_km"><span class="val">km</span></div>
+    <div class="mfc-row"><label>Départ</label><input type="time" data-in="ftt"><span class="val"></span></div>
+    <div class="mfc-row"><label>Consommation</label><input type="number" min="5" max="40" step="0.5" data-in="cco"><span class="val">kWh/100</span></div>
+    <div class="mfc-hint" data-k="hint"></div>
+  </div>
+  <!-- 4. pastilles -->
+  <div class="mfc-chips">
+    <span class="mfc-chip" data-k="chip_link">—</span>
+    <span class="mfc-chip" data-k="chip_reason">—</span>
+    <span class="mfc-chip" data-k="chip_acu">—</span>
+  </div>
+</div>
+<script>
+(function () {
+  // Corps partagé du widget Borne (dashboard et mobile). L'hôte, défini par le template, fournit
+  // window.mfrHost = { subscribe(id, fn), execute(id, options) } ; fn reçoit { value, display_value }.
+  var root = document.getElementById('mfc-#uid#');
+  var host = window.mfrHost;
+  if (!root || !host) { return; }
+  var data = #mfr_data#;
+  var values = {};
+  var CAR = { '0': 'inconnu', '1': 'absente', '2': 'en charge', '3': 'en attente', '4': 'terminé', '5': 'erreur' };
+  // Raison Fronius (modelStatus) → libellé court
+  var REASON = { '0': 'pas de données', '1': 'surchauffe', '2': 'attente accès', '3': 'forçage marche', '4': 'forçage arrêt',
+    '5': 'programmateur', '6': 'limite d’énergie', '7': 'prix bas', '8': 'trajet : test', '9': 'trajet : temps court',
+    '10': 'prochain trajet', '11': 'trajet : sans horloge', '12': 'surplus PV', '13': 'défaut (repli)', '14': 'programmateur (repli)',
+    '15': 'défaut', '16': 'attente éco', '17': 'attente éco', '18': 'attente trajet', '19': 'maintien véhicule',
+    '20': 'pause interdite', '22': 'débranchement simulé', '23': 'commutation phases', '24': 'pause minimale' };
+
+  function el(k) { return root.querySelector('[data-k="' + k + '"]'); }
+  function txt(k, v) { var e = el(k); if (e) { e.textContent = v; } }
+  function input(k) { return root.querySelector('[data-in="' + k + '"]'); }
+  function num(v) {
+    if (v === null || v === undefined || v === '') { return null; }
+    if (typeof v === 'number') { return isNaN(v) ? null : v; }
+    var s = String(v).replace(/[\s  ']/g, '');
+    if (/^-?\d{1,3}(\.\d{3})+(,\d+)?$/.test(s)) { s = s.replace(/\./g, ''); }
+    s = s.replace(',', '.');
+    var n = parseFloat(s);
+    return isNaN(n) ? null : n;
+  }
+  function get(k) { return values[k] === undefined ? null : values[k]; }
+  function fmtW(v) { return v === null ? '—' : Math.round(v).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' '); }
+  function fmt1(v) { return v === null ? '—' : (Math.round(v * 10) / 10).toString().replace('.', ','); }
+  function busy(inp) { return inp && (document.activeElement === inp || inp.dataset.drag === '1'); }
+  function setInput(k, v) {
+    var inp = input(k);
+    if (!inp || busy(inp)) { return; }
+    inp.value = (v === null || v === undefined) ? '' : v;
+  }
+  function segment(name, attr, active) {
+    root.querySelectorAll('[data-seg="' + name + '"] span').forEach(function (s) {
+      s.classList.toggle('on', active !== null && s.getAttribute(attr) === String(active));
+    });
+  }
+
+  function render() {
+    var offline = num(get('connected')) === 0;
+    var p = offline ? null : num(get('p')), car = get('car'), acu = num(get('acu')), phases = num(get('phases'));
+    txt('p', fmtW(p));
+    var pv = el('p'); if (pv) { pv.classList.toggle('idle', !(p >= 10)); }
+    txt('p_sub', p >= 10 && phases !== null ? 'W · ' + phases + (phases > 1 ? ' phases' : ' phase') : 'W');
+    txt('car', offline ? 'hors ligne' : (car === null ? '—' : (CAR[String(car)] || String(car))));
+    txt('e_session', fmt1(num(get('e_session'))));
+    segment('mode', 'data-mode', get('mode_code') === null ? null : num(get('mode_code')));
+    segment('force', 'data-force', get('frc') === null ? null : num(get('frc')));
+    // réglages : curseur et champs calés sur la borne, sauf pendant une saisie
+    var amp = num(get('amp')), ama = num(get('ama'));
+    var slider = input('amp');
+    if (slider) {
+      slider.max = ama !== null && ama >= 6 ? ama : 32;
+      if (!busy(slider) && amp !== null) { slider.value = amp; }
+      txt('amp_val', (busy(slider) ? slider.value : (amp === null ? '—' : amp)) + ' A');
+    }
+    var fte = num(get('fte')), cco = num(get('cco'));
+    setInput('fte', fte === null ? null : Math.round(fte * 10) / 10);
+    setInput('cco', cco === null ? null : Math.round(cco * 10) / 10);
+    var km = input('trip_km');
+    if (km) {
+      var noCco = !(cco > 0);
+      km.disabled = noCco;
+      setInput('trip_km', noCco || fte === null ? null : Math.round(fte / cco * 100));
+      txt('hint', noCco ? 'Distance : renseignez d’abord la consommation du véhicule' : '');
+    }
+    var ftt = get('ftt');
+    setInput('ftt', ftt === null ? null : String(ftt));
+    // pastilles
+    var link = el('chip_link');
+    if (link) {
+      var conn = get('connected');
+      link.textContent = conn === null ? '—' : (offline ? 'HORS LIGNE' : 'connectée');
+      link.classList.toggle('alert', offline);
+    }
+    var reason = get('model_status'), cr = el('chip_reason');
+    if (cr) {
+      if (reason === null || offline) { cr.classList.add('mfc-hidden'); }
+      else { cr.classList.remove('mfc-hidden'); cr.textContent = REASON[String(num(reason))] || String(get('model_status_text') || reason); }
+    }
+    var ca = el('chip_acu');
+    if (ca) {
+      if (acu === null || offline) { ca.classList.add('mfc-hidden'); }
+      else { ca.classList.remove('mfc-hidden'); ca.textContent = 'autorisé ' + acu + ' A'; }
+    }
+  }
+
+  // valeurs initiales + abonnement aux mises à jour live
+  Object.keys(data.cmds || {}).forEach(function (k) {
+    var c = data.cmds[k];
+    values[k] = c.value;
+    if (c.id) {
+      // Le core (addUpdateFunction) ignore une fonction dont le texte (toString) est déjà abonné à
+      // la commande : l'uid du rendu, en commentaire, distingue chaque rendu (voir body.html).
+      host.subscribe(String(c.id), function (_options) {
+        /* mfc-#uid# */
+        if (!root.isConnected) { return; }
+        values[k] = (_options.value !== undefined && _options.value !== null) ? _options.value : _options.display_value;
+        render();
+      });
+    }
+  });
+
+  // Actions : un clic sur un segment envoie l'ordre ; affiché tout de suite, confirmé (ou remis)
+  // par la réponse de la borne
+  var actions = data.actions || {};
+  function run(name, options) {
+    if (!actions[name]) { return false; }
+    host.execute(actions[name], options);
+    return true;
+  }
+  root.querySelectorAll('[data-seg="mode"] span').forEach(function (s) {
+    s.addEventListener('click', function (ev) {
+      ev.stopPropagation();
+      if (run('mode_set', { select: s.getAttribute('data-mode') })) { values.mode_code = s.getAttribute('data-mode'); render(); }
+    });
+  });
+  root.querySelectorAll('[data-seg="force"] span').forEach(function (s) {
+    s.addEventListener('click', function (ev) {
+      ev.stopPropagation();
+      if (run({ '0': 'force_neutral', '2': 'force_on', '1': 'force_off' }[s.getAttribute('data-force')])) { values.frc = s.getAttribute('data-force'); render(); }
+    });
+  });
+  // Réglages : valeur affichée tout de suite (et champ lié recalculé), confirmée par la borne ensuite
+  var slider = input('amp');
+  if (slider) {
+    slider.addEventListener('pointerdown', function () { slider.dataset.drag = '1'; });
+    slider.addEventListener('input', function () { txt('amp_val', slider.value + ' A'); });
+    slider.addEventListener('change', function () {
+      slider.dataset.drag = '';
+      values.amp = num(slider.value);
+      run('amp_set', { slider: num(slider.value) });
+      render();
+    });
+    slider.addEventListener('pointerup', function () { slider.dataset.drag = ''; });
+    slider.addEventListener('pointercancel', function () { slider.dataset.drag = ''; });
+  }
+  function clamp(v, inp) {
+    var lo = num(inp.min), hi = num(inp.max);
+    if (lo !== null && v < lo) { v = lo; }
+    if (hi !== null && v > hi) { v = hi; }
+    return v;
+  }
+  function onNumber(k, apply) {
+    var inp = input(k);
+    if (!inp) { return; }
+    function commit() {
+      var v = num(inp.value);
+      if (v === null) { render(); return; }
+      v = clamp(v, inp);
+      // change puis blur (ou Entrée puis change) : une seule émission par valeur
+      if (String(v) === inp.dataset.committed) { render(); return; }
+      inp.dataset.committed = String(v);
+      apply(v);
+      render();
+    }
+    inp.addEventListener('focus', function () { inp.dataset.committed = String(num(inp.value)); });
+    inp.addEventListener('keydown', function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); commit(); inp.blur(); } });
+    inp.addEventListener('change', function () { commit(); });
+  }
+  onNumber('fte', function (kwh) {
+    values.fte = kwh;
+    run('trip_energy_set', { slider: kwh });
+  });
+  onNumber('trip_km', function (km) {
+    var cco = num(get('cco'));
+    if (!(cco > 0)) { return; }
+    values.fte = Math.round(km * cco * 10) / 1000;
+    run('trip_km_set', { slider: km });
+  });
+  onNumber('cco', function (cco) {
+    values.cco = cco;
+    run('cco_set', { slider: cco });
+  });
+  var time = input('ftt');
+  if (time) {
+    function commitTime() {
+      if (!/^\d{2}:\d{2}$/.test(time.value)) { render(); return; }
+      if (time.value === time.dataset.committed) { return; }
+      time.dataset.committed = time.value;
+      values.ftt = time.value;
+      run('trip_time_set', { message: time.value, title: '' });
+      render();
+    }
+    time.addEventListener('focus', function () { time.dataset.committed = time.value; });
+    time.addEventListener('keydown', function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); commitTime(); time.blur(); } });
+    time.addEventListener('change', function () { commitTime(); });
+  }
+  // Un clic dans les champs ne doit pas ouvrir la fenêtre de l'équipement (dashboard)
+  root.querySelectorAll('input').forEach(function (i) {
+    i.addEventListener('click', function (ev) { ev.stopPropagation(); });
+    i.addEventListener('pointerdown', function (ev) { ev.stopPropagation(); });
+  });
+  render();
+})();
+</script>

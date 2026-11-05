@@ -1,0 +1,3 @@
+# Artefacts générés sur la cible Jeedom — jamais versionnés
+**/__pycache__/
+*.pyc

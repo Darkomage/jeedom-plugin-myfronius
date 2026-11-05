@@ -1,0 +1,94 @@
+/* Widget MyFronius — équipement Site (dashboard et mobile). Couleurs de flux fixes, fond et
+   textes hérités du thème Jeedom (--txt-color). */
+
+.mfr-widget { --mfr-pv:#F5A623; --mfr-house:#3B82F6; --mfr-grid:#7C8AA5; --mfr-bat:#22A06B; --mfr-ev:#A855F7; --mfr-cons:#EF6C4D;
+  --mfr-tile:rgba(128,128,128,.13); --mfr-line:rgba(128,128,128,.35); --mfr-sub:rgba(128,128,128,.95);
+  font-family:inherit; color:var(--txt-color,#333); padding:2px 6px 6px; min-width:290px; text-align:left; }
+.mfr-widget * { box-sizing:border-box; }
+.mfr-row { display:flex; align-items:stretch; justify-content:center; gap:0; }
+.mfr-main { align-items:center; }
+.mfr-tile { background:var(--mfr-tile); border-radius:8px; padding:6px 8px; display:flex; flex-direction:column; align-items:center; justify-content:center; min-width:66px; text-align:center; }
+.mfr-tile .v { font-size:15px; font-weight:600; line-height:1.15; white-space:nowrap; }
+.mfr-tile .v small { font-size:10px; font-weight:400; color:var(--mfr-sub); }
+.mfr-tile .s { font-size:10px; color:var(--mfr-sub); white-space:nowrap; line-height:1.3; }
+.mfr-house { border:2px solid var(--mfr-house); min-width:78px; }
+.mfr-flow { position:relative; flex:1 1 30px; min-width:24px; height:3px; border-radius:2px; background:var(--mfr-line); overflow:hidden; }
+.mfr-flow::after { content:""; position:absolute; inset:0; opacity:0; background:repeating-linear-gradient(90deg, var(--mfr-c,#999) 0 5px, transparent 5px 13px); animation:mfr-h 1.1s linear infinite; }
+.mfr-flow.on::after { opacity:1; }
+.mfr-flow.rev::after { animation-direction:reverse; }
+.mfr-flow.slow::after { animation-duration:1.9s; }
+.mfr-flow.fast::after { animation-duration:.6s; }
+.mfr-v { flex:none; width:3px; min-width:0; height:14px; margin:0 auto; }   /* min-width de .mfr-flow annulé */
+.mfr-v::after { background:repeating-linear-gradient(180deg, var(--mfr-c,#999) 0 5px, transparent 5px 13px); animation-name:mfr-vv; }
+@keyframes mfr-h { to { background-position:13px 0; } }
+@keyframes mfr-vv { to { background-position:0 13px; } }
+.mfr-bus { position:relative; height:12px; margin:0 12%; }
+.mfr-bus::before { content:""; position:absolute; left:50%; top:0; width:3px; height:100%; margin-left:-1px; background:var(--mfr-line); }
+.mfr-bus::after { content:""; position:absolute; left:0; right:0; bottom:0; height:3px; background:var(--mfr-line); border-radius:2px; }
+.mfr-bus.single::after { display:none; }
+.mfr-items { display:flex; justify-content:center; gap:6px; }
+.mfr-consumers { flex-wrap:wrap; }
+.mfr-item { display:flex; flex-direction:column; align-items:stretch; flex:1 1 0; min-width:0; max-width:150px; }
+.mfr-consumers .mfr-item { flex:1 1 76px; }
+.mfr-item .mfr-tile { flex:1; min-width:0; }
+.mfr-small { padding:4px 6px; }
+.mfr-small .v { font-size:11px; }
+.mfr-rest { border:1px dashed var(--mfr-house); }
+.mfr-load { border:1.5px solid transparent; }
+.mfr-load.active { border-color:var(--mfr-cons); }
+.mfr-dot { display:inline-block; width:7px; height:7px; border-radius:50%; background:var(--mfr-line); margin-right:4px; vertical-align:middle; }
+.mfr-dot.on { background:var(--mfr-cons); }
+.mfr-small .mfr-mode { margin-top:3px; }
+.mfr-small .mfr-mode .m { min-width:40px; font-size:9.5px; }
+.mfr-small .mfr-btn { width:18px; height:15px; font-size:11px; }
+.mfr-ctrl { min-height:70px; padding:6px 4px; }
+.mfr-ctrl .s { white-space:normal; }
+.mfr-charger { border:1.5px solid transparent; }
+.mfr-charger.active { border-color:var(--mfr-ev); }
+.mfr-battery { border:1.5px solid transparent; }
+.mfr-battery.active { border-color:var(--mfr-bat); }
+.mfr-charger .v.idle { opacity:.55; }
+.mfr-bar { width:56px; height:8px; border-radius:3px; background:var(--mfr-line); margin:4px 0; overflow:hidden; }
+.mfr-bar-fill { height:100%; width:0; background:var(--mfr-bat); border-radius:3px; transition:width .6s; }
+.mfr-mode { display:flex; align-items:center; justify-content:center; gap:6px; margin-top:4px; }
+.mfr-mode .m { font-size:10px; font-weight:600; min-width:48px; text-align:center; }
+.mfr-btn { display:inline-flex; align-items:center; justify-content:center; width:20px; height:17px; border-radius:4px; background:var(--mfr-line); font-size:12px; font-weight:700; cursor:pointer; user-select:none; line-height:1; }
+.mfr-btn:hover { filter:brightness(1.25); }
+.mfr-btn.mfr-act { margin-top:3px; font-size:11px; }
+.mfr-kpi { display:grid; grid-template-columns:1fr 1fr; gap:2px 10px; font-size:11px; color:var(--mfr-sub); margin-top:8px; padding:0 4px; }
+.mfr-kpi b { font-size:13px; color:var(--txt-color,#333); font-weight:600; margin-left:4px; }
+.mfr-day { font-size:11px; color:var(--mfr-sub); margin-top:4px; padding:0 4px; }
+.mfr-day b { font-size:12.5px; color:var(--txt-color,#333); font-weight:600; }
+.mfr-chips { display:flex; flex-wrap:wrap; gap:4px; margin-top:6px; padding:0 4px; }
+.mfr-chip { font-size:9.5px; padding:2px 8px; border-radius:9px; background:var(--mfr-line); white-space:nowrap; }
+.mfr-chip.alert { background:#d9534f; color:#fff; }
+.mfr-hidden { display:none !important; }
+
+/* Widget Borne (équipement charger, dashboard et mobile) : état, mode, forçage, réglages. */
+.mfc-widget { --mfr-ev:#A855F7; --mfr-tile:rgba(128,128,128,.13); --mfr-line:rgba(128,128,128,.35); --mfr-sub:rgba(128,128,128,.95);
+  --mfr-on:rgba(168,85,247,.22); --mfr-field:rgba(128,128,128,.10);
+  font-family:inherit; color:var(--txt-color,#333); padding:2px 8px 8px; min-width:290px; text-align:left; font-size:12px; }
+.mfc-widget * { box-sizing:border-box; }
+.mfc-tiles { display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; }
+.mfc-tile { background:var(--mfr-tile); border-radius:8px; padding:6px 4px; text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.mfc-tile .v { font-size:15px; font-weight:600; line-height:1.15; white-space:nowrap; }
+.mfc-tile .v.idle { opacity:.55; }
+.mfc-tile .s { font-size:10px; color:var(--mfr-sub); white-space:nowrap; line-height:1.3; }
+.mfc-power { border:1.5px solid var(--mfr-ev); }
+.mfc-lbl { font-size:10px; color:var(--mfr-sub); margin:8px 2px 3px; text-transform:uppercase; letter-spacing:.03em; }
+.mfc-seg { display:flex; border:1px solid var(--mfr-line); border-radius:6px; overflow:hidden; }
+.mfc-seg span { flex:1; text-align:center; padding:4px 2px; font-size:11.5px; color:var(--mfr-sub); border-right:1px solid var(--mfr-line); cursor:pointer; user-select:none; white-space:nowrap; }
+.mfc-seg span:last-child { border-right:0; }
+.mfc-seg span:hover { background:var(--mfr-field); }
+.mfc-seg span.on { background:var(--mfr-on); color:var(--txt-color,#333); font-weight:600; }
+.mfc-row { display:grid; grid-template-columns:84px 1fr 56px; align-items:center; gap:8px; margin:4px 0; }
+.mfc-row label { font-size:11.5px; color:var(--mfr-sub); margin:0; font-weight:400; }
+.mfc-row .val { text-align:right; font-weight:600; font-size:12px; white-space:nowrap; }
+.mfc-row input[type=number], .mfc-row input[type=time] { width:100%; height:26px; font-size:12.5px; padding:0 6px; border:1px solid var(--mfr-line); border-radius:5px; background:var(--mfr-field); color:inherit; }
+.mfc-row input:disabled { opacity:.45; }
+.mfc-row input[type=range] { width:100%; margin:0; accent-color:var(--mfr-ev); }
+.mfc-hint { font-size:10px; color:var(--mfr-sub); margin:2px 2px 0; min-height:0; }
+.mfc-chips { display:flex; flex-wrap:wrap; gap:4px; margin-top:8px; }
+.mfc-chip { font-size:9.5px; padding:2px 8px; border-radius:9px; background:var(--mfr-line); white-space:nowrap; }
+.mfc-chip.alert { background:#d9534f; color:#fff; }
+.mfc-hidden { display:none !important; }
